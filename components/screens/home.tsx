@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, memo } from "react"
+import { useDebounce } from "@/hooks/use-debounce"
 import { useAppContext } from "@/context/app-context"
 import VIPBar from "@/components/vip-bar"
 import PressingCard from "@/components/pressing-card"
@@ -8,7 +9,7 @@ import { Search, Home as HomeIcon, MapPin, Scale, Tag, User, CircleUser } from "
 import dynamic from 'next/dynamic'
 import { Drawer } from 'vaul';
 
-const MapView = dynamic(() => import('@/components/map-view'), { ssr: false })
+const MemoizedMapView = memo(dynamic(() => import('@/components/map-view'), { ssr: false }))
 
 const MOCK_PRESSINGS = [
   {
@@ -73,9 +74,10 @@ export default function Home() {
   const [isUserDrawerOpen, setIsUserDrawerOpen] = useState(false);
   const [activeSnap, setActiveSnap] = useState<number | string | null>(0.5);
   const [triggerRecenter, setTriggerRecenter] = useState<number>(0);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
         
   const filteredPressings = MOCK_PRESSINGS.filter((p) => {
-    const searchMatch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const searchMatch = p.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
     const deliveryMatch = filters.delivery === null || p.delivery === filters.delivery;
     const pricingMatch = filters.pricingType === null || p.pricingType === filters.pricingType || p.pricingType === 'both';
     return searchMatch && deliveryMatch && pricingMatch;
@@ -94,7 +96,7 @@ export default function Home() {
     <div className="w-full h-screen bg-background flex flex-col relative">
       {/* Map Background */}
       <div className="absolute inset-0 z-0">
-        <MapView 
+        <MemoizedMapView 
           pressings={MOCK_PRESSINGS} 
           hoveredPressingId={null} 
           triggerRecenter={triggerRecenter} 
@@ -105,7 +107,7 @@ export default function Home() {
       <div className="absolute top-0 left-0 right-0 p-4 z-10 flex justify-between items-start pointer-events-none">
         {/* Brand */}
         <div className="pointer-events-auto">
-            <div className="bg-background/90 backdrop-blur-md px-6 py-2 rounded-full shadow-sm border border-border/50">
+            <div className="bg-background/90 px-6 py-2 rounded-full shadow-sm border border-border/50">
                 <span className="font-black text-2xl tracking-tighter text-primary">Zako</span>
             </div>
         </div>
@@ -113,7 +115,7 @@ export default function Home() {
         {/* User & Location */}
         <div className="flex flex-col gap-3 pointer-events-auto">
             {/* Profile */}
-            <button onClick={() => setIsUserDrawerOpen(true)} className="relative w-12 h-12 rounded-full bg-background/90 backdrop-blur-md shadow-sm border border-border/50 flex items-center justify-center overflow-hidden active:scale-95 transition-transform">
+            <button onClick={() => setIsUserDrawerOpen(true)} className="relative w-12 h-12 rounded-full bg-background/90 shadow-sm border border-border/50 flex items-center justify-center overflow-hidden active:scale-95 transition-transform">
                 {user ? (
                      <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
                         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 36 36">
@@ -147,7 +149,7 @@ export default function Home() {
             </button>
             
             {/* Location Indicator */}
-            <button onClick={handleRecenter} className="w-11 h-11 rounded-full bg-background/90 backdrop-blur-md shadow-sm border border-border/50 flex items-center justify-center text-primary active:scale-95 transition-transform">
+            <button onClick={handleRecenter} className="w-11 h-11 rounded-full bg-background/90 shadow-sm border border-border/50 flex items-center justify-center text-primary active:scale-95 transition-transform">
                 <MapPin className="w-5 h-5" />
             </button>
         </div>

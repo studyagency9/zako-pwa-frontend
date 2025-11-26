@@ -1,6 +1,7 @@
 "use client"
 
 import { Star, MapPin, Scale, Shirt, Bike, Building } from "lucide-react"
+import { memo } from "react"
 
 interface PressCardProps {
   pressing: any
@@ -21,7 +22,7 @@ const StarRating = ({ rating }: { rating: number }) => {
   );
 };
 
-export default function PressingCard({ pressing, onSelect }: PressCardProps) {
+const PressingCardComponent = ({ pressing, onSelect }: PressCardProps) => {
   const getInitials = (name: string) => name.charAt(0).toUpperCase();
 
   const avatarColors = ['bg-teal-500', 'bg-red-400', 'bg-blue-500', 'bg-orange-400'];
@@ -33,7 +34,6 @@ export default function PressingCard({ pressing, onSelect }: PressCardProps) {
       onClick={onSelect}
       className="w-full text-left group p-4 rounded-2xl bg-card border border-border/10 shadow-lg shadow-primary/5 hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
     >
-      {/* Pricing Badge Top Right */}
       <div className={`absolute top-0 right-0 px-3 py-1 rounded-bl-xl text-xs font-bold ${
           pressing.pricingType === 'kilo' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
       }`}>
@@ -41,14 +41,12 @@ export default function PressingCard({ pressing, onSelect }: PressCardProps) {
       </div>
 
       <div className="flex items-center gap-4 mt-2">
-        {/* Avatar */}
         <div className={`w-14 h-14 ${avatarColor} rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0`}>
           {getInitials(pressing.name)}
         </div>
 
-        {/* Info */}
         <div className="flex-grow">
-          <div className="flex justify-between items-start pr-16"> {/* Added padding-right to avoid overlap with badge */}
+          <div className="flex justify-between items-start pr-16">
             <h3 className="font-bold text-foreground text-base">{pressing.name}</h3>
           </div>
           
@@ -89,3 +87,5 @@ export default function PressingCard({ pressing, onSelect }: PressCardProps) {
     </button>
   )
 }
+
+export default memo(PressingCardComponent);
